@@ -1,0 +1,53 @@
+Sub csvToxls()
+    Dim FSO As Object
+    Dim folder As Object
+    Dim wb As Object
+    
+    csvPath = "C:\Charlotte datahub\VL csv" 'lien du dossier csv
+    xlsPath = "C:\Charlotte datahub\VL xls" 'lien du dossier xls
+
+    Set FSO = CreateObject("Scripting.FileSystemObject")
+    Set CSVfolder = FSO.GetFolder(csvPath)
+'    CSVfolder.Replace What:=".", Replacement:=".", LookAt:=xlPart, _
+'    SearchOrder:=xlByRows, MatchCase:=False, SearchFormat:=False, _
+'    ReplaceFormat:=False
+    If FSO.FolderExists(xlsPath) = False Then
+        FSO.createFolder (xlsPath)
+    End If
+
+    Set XlsFolder = FSO.GetFolder(xlsPath)
+
+    With Application
+        .DisplayAlerts = False
+        .ScreenUpdating = False
+
+    End With
+
+    For Each wb In CSVfolder.Files
+        If LCase(Right(wb.Name, 3)) = "csv" Then
+            Set activeWB = Workbooks.Open(wb)
+            Range("A:A").TextToColumns Destination:=Range("A1"), DataType:=xlDelimited, _
+            TextQualifier:=xlDoubleQuote, _
+            ConsecutiveDelimiter:=True, Tab:=True, _
+            Semicolon:=True, _
+            Comma:=False, Space:=False, _
+            Other:=False, _
+            DecimalSeparator:=".", _
+            ThousandsSeparator:=" ", _
+            TrailingMinusNumbers:=True
+            activeWB.SaveAs Filename:=xlsPath & "\" & Left(activeWB.Name, Len(activeWB.Name) - 3) & "xls", FileFormat:=xlNormal
+            activeWB.Close
+        End If
+    Next
+
+    With Application
+        .DisplayAlerts = True
+        .ScreenUpdating = True
+    End With
+
+    MsgBox "Les fichiers CSV ont bien été convertis en XLS."
+
+End Sub
+
+
+
