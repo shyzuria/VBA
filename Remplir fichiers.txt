@@ -1,0 +1,197 @@
+Option Explicit
+Option Base 1
+Sub Remplissage()
+Dim Fichier, FichierBIS, WbkBIS As Workbook, Wbk1 As Workbook, Wbk2 As Workbook, Wbk3 As Workbook, Wbk4 As Workbook, Wbk5 As Workbook
+Dim i As Integer, j As Integer, n As Integer, Compteur As Integer, k As Integer, q As Integer, p As Integer, m As Integer
+Dim a As String, B As String
+Dim Lg&
+Dim Wk() As Workbook 'Workbook des 3 fichiers AIF
+Dim MyFolder As String 'Dossier où y a tous ls reports
+Dim MyFile As String
+Dim FSO As Object
+Dim ToPath, MyFolder1 As String 'MyFolder1 permet de ne pas écraser le dossier MyFolder
+ToPath = "\\Frdeffilev2\SVC_SGF\Opérations\2 - Reporting & Business Support\Other - collab\Charlotte\AIFM\Test Q1 2022\backup" 'chemin du backup
+Set Wbk5 = ThisWorkbook 'fichier où y a la macro
+
+'Pour la sélection multiples
+On Error Resume Next
+Application.ScreenUpdating = False
+MsgBox "Sélectionner le dossier contenant les reports AIFFRF"
+With Application.FileDialog(msoFileDialogFolderPicker)
+.Title = "Sélectionner un dossier"
+.Show
+.AllowMultiSelect = False
+    If .SelectedItems.Count = 0 Then 'si aucun dossier n'est sélectionné
+MsgBox "Tu n'as sélectionné aucun dossier"
+        Exit Sub
+    End If
+MyFolder = .SelectedItems(1) & "\"
+End With
+
+'Pour la copie dans le dossier backup
+If Right(MyFolder, 1) = "\" Then
+    MyFolder1 = Left(MyFolder, Len(MyFolder) - 1)
+End If
+
+If Right(ToPath, 1) = "\" Then
+    ToPath = Left(ToPath, Len(ToPath) - 1)
+End If
+
+Set FSO = CreateObject("scripting.filesystemobject")
+
+FSO.CopyFolder Source:=MyFolder1, Destination:=ToPath
+MsgBox "Les fichiers du dossier ont été copiés dans le backup. Maintenant tu peux sélectionner tes 3 fichiers AIF."
+
+MyFile = Dir(MyFolder) 'Prend le premier fichier du dossier
+
+'Sélection du fichier : Les 3 fichiers
+Fichier = Application.GetOpenFilename("Fichiers Excels, *.xls*", , , , True)
+
+If IsEmpty(Fichier) Then
+    MsgBox "Tu n'as pas sélectionné de fichier"
+    Exit Sub
+End If
+
+If Right(Left(MyFile, 43), 1) = "0" Then 'sauter le fichier SDG car il n'est pas à remplir
+    MyFile = Dir
+End If
+
+Do While MyFile <> "" 'Tant que le fichier n'est pas vide et que ce n'est pas un SDG
+'faire les opérations pour chacun des reports, remplissages de la feuille AIF File (2)
+    ReDim Wk(UBound(Fichier))
+
+    For i = LBound(Fichier) To UBound(Fichier)
+        Set Wk(i) = Application.Workbooks.Open(Fichier(i))
+        If Wk(i).Name = "AIF_LIQUIDITY.xls" Then
+            Set Wbk1 = Wk(i)
+        ElseIf Wk(i).Name = "AIF_RISK.xls" Then
+
+            Set Wbk2 = Wk(i)
+        ElseIf Wk(i).Name = "AIF_STRESS_RESULTS.xls" Then
+            Set Wbk3 = Wk(i)
+        End If
+
+    Next i
+    Set Wbk4 = Workbooks.Open(Filename:=MyFolder & MyFile)
+
+    Wbk4.Sheets("AIF file 24(2)").Activate
+
+    Wbk2.Sheets("AIF_RISK").Activate 'Utilisation du fichier AIF risk pour remplir les plages de données
+
+    i = 1
+    While Wbk2.Sheets("AIF_RISK").Cells(i, 1) <> Wbk4.Sheets("AIF file 24(1)").Range("C26")
+        i = i + 1
+    Wend
+
+        Wbk4.Sheets("AIF file 24(2)").Range("C402").Value = Application.VLookup(Wbk2.Sheets("AIF_RISK").Cells(i, 1), Wbk2.Sheets("AIF_RISK").Range(Cells(i, 1), Cells(, 13)), 13, 0)
+        Wbk4.Sheets("AIF file 24(2)").Range("C403").Value = Application.VLookup(Wbk2.Sheets("AIF_RISK").Cells(i, 1), Wbk2.Sheets("AIF_RISK").Range(Cells(i, 1), Cells(, 12)), 12, 0)
+        Wbk4.Sheets("AIF file 24(2)").Range("G194").Value = Application.VLookup(Wbk2.Sheets("AIF_RISK").Cells(i, 1), Wbk2.Sheets("AIF_RISK").Range(Cells(i, 1), Cells(, 10)), 10, 0)
+        Wbk4.Sheets("AIF file 24(2)").Range("I184").Value = Application.VLookup(Wbk2.Sheets("AIF_RISK").Cells(i, 1), Wbk2.Sheets("AIF_RISK").Range(Cells(i, 1), Cells(, 11)), 11, 0)
+        Wbk4.Sheets("AIF file 24(2)").Range("I185").Value = Application.VLookup(Wbk2.Sheets("AIF_RISK").Cells(i, 1), Wbk2.Sheets("AIF_RISK").Range(Cells(i, 1), Cells(, 11)), 11, 0)
+        Wbk4.Sheets("AIF file 24(2)").Range("I188").Value = Application.VLookup(Wbk2.Sheets("AIF_RISK").Cells(i, 1), Wbk2.Sheets("AIF_RISK").Range(Cells(i, 1), Cells(, 11)), 11, 0)
+        Wbk4.Sheets("AIF file 24(2)").Range("I194").Value = Application.VLookup(Wbk2.Sheets("AIF_RISK").Cells(i, 1), Wbk2.Sheets("AIF_RISK").Range(Cells(i, 1), Cells(, 11)), 11, 0)
+        Wbk4.Sheets("AIF file 24(2)").Range("D184").Value = Application.VLookup(Wbk2.Sheets("AIF_RISK").Cells(i, 1), Wbk2.Sheets("AIF_RISK").Range(Cells(i, 1), Cells(, 2)), 2, 0)
+        Wbk4.Sheets("AIF file 24(2)").Range("E185").Value = Application.VLookup(Wbk2.Sheets("AIF_RISK").Cells(i, 1), Wbk2.Sheets("AIF_RISK").Range(Cells(i, 1), Cells(, 3)), 3, 0)
+        Wbk4.Sheets("AIF file 24(2)").Range("E186").Value = Application.VLookup(Wbk2.Sheets("AIF_RISK").Cells(i, 1), Wbk2.Sheets("AIF_RISK").Range(Cells(i, 1), Cells(, 4)), 4, 0)
+        Wbk4.Sheets("AIF file 24(2)").Range("E187").Value = Application.VLookup(Wbk2.Sheets("AIF_RISK").Cells(i, 1), Wbk2.Sheets("AIF_RISK").Range(Cells(i, 1), Cells(, 5)), 5, 0)
+        Wbk4.Sheets("AIF file 24(2)").Range("E188").Value = Application.VLookup(Wbk2.Sheets("AIF_RISK").Cells(i, 1), Wbk2.Sheets("AIF_RISK").Range(Cells(i, 1), Cells(, 6)), 6, 0)
+        Wbk4.Sheets("AIF file 24(2)").Range("E189").Value = Application.VLookup(Wbk2.Sheets("AIF_RISK").Cells(i, 1), Wbk2.Sheets("AIF_RISK").Range(Cells(i, 1), Cells(, 7)), 7, 0)
+        Wbk4.Sheets("AIF file 24(2)").Range("E190").Value = Application.VLookup(Wbk2.Sheets("AIF_RISK").Cells(i, 1), Wbk2.Sheets("AIF_RISK").Range(Cells(i, 1), Cells(, 8)), 8, 0)
+        If Wbk4.Sheets("AIF file 24(2)").Range("I194").Value = "VaR 1D Historical 99% 2 ans" Then
+            Wbk4.Sheets("AIF file 24(2)").Range("H194").Value = "HISTO"
+        ElseIf Wbk4.Sheets("AIF file 24(2)").Range("I194").Value = "VaR 1D Monte Carlo 99% " Then
+            Wbk4.Sheets("AIF file 24(2)").Range("H194").Value = "CARLO"
+        Else
+            Wbk4.Sheets("AIF file 24(2)").Range("H194").Value = "PARAM"
+        End If
+
+    Wbk2.Close
+
+
+    Wbk1.Sheets("AIF_LIQUIDITY").Activate 'Utilisation du fichier AIF liquidity pour remplir les plages de données
+    i = 1
+    
+    While Wbk1.Sheets("AIF_LIQUIDITY").Cells(i, 1) <> Wbk4.Sheets("AIF file 24(1)").Range("C26")
+        i = i + 1
+    Wend
+        Wbk4.Sheets("AIF file 24(2)").Range("C249").NumberFormat = "@" 'mettre la cellule en format texte
+        Wbk4.Sheets("AIF file 24(2)").Range("C249").Value = Application.VLookup(Wbk1.Sheets("AIF_LIQUIDITY").Cells(i, 1), Wbk1.Sheets("AIF_LIQUIDITY").Range(Cells(i, 1), Cells(, 2)), 2, 0)
+        
+        Wbk4.Sheets("AIF file 24(2)").Range("C250").NumberFormat = "@"
+        Wbk4.Sheets("AIF file 24(2)").Range("C250").Value = Application.VLookup(Wbk1.Sheets("AIF_LIQUIDITY").Cells(i, 1), Wbk1.Sheets("AIF_LIQUIDITY").Range(Cells(i, 1), Cells(, 3)), 3, 0)
+
+        Wbk4.Sheets("AIF file 24(2)").Range("C251").NumberFormat = "@"
+        Wbk4.Sheets("AIF file 24(2)").Range("C251").Value = Application.VLookup(Wbk1.Sheets("AIF_LIQUIDITY").Cells(i, 1), Wbk1.Sheets("AIF_LIQUIDITY").Range(Cells(i, 1), Cells(, 4)), 4, 0)
+
+        Wbk4.Sheets("AIF file 24(2)").Range("C252").NumberFormat = "@"
+        Wbk4.Sheets("AIF file 24(2)").Range("C252").Value = Application.VLookup(Wbk1.Sheets("AIF_LIQUIDITY").Cells(i, 1), Wbk1.Sheets("AIF_LIQUIDITY").Range(Cells(i, 1), Cells(, 5)), 5, 0)
+
+        Wbk4.Sheets("AIF file 24(2)").Range("C253").NumberFormat = "@"
+        Wbk4.Sheets("AIF file 24(2)").Range("C253").Value = Application.VLookup(Wbk1.Sheets("AIF_LIQUIDITY").Cells(i, 1), Wbk1.Sheets("AIF_LIQUIDITY").Range(Cells(i, 1), Cells(, 6)), 6, 0)
+
+        Wbk4.Sheets("AIF file 24(2)").Range("C254").NumberFormat = "@"
+        Wbk4.Sheets("AIF file 24(2)").Range("C254").Value = Application.VLookup(Wbk1.Sheets("AIF_LIQUIDITY").Cells(i, 1), Wbk1.Sheets("AIF_LIQUIDITY").Range(Cells(i, 1), Cells(, 7)), 7, 0)
+
+        Wbk4.Sheets("AIF file 24(2)").Range("C255").NumberFormat = "@"
+        Wbk4.Sheets("AIF file 24(2)").Range("C255").Value = Application.VLookup(Wbk1.Sheets("AIF_LIQUIDITY").Cells(i, 1), Wbk1.Sheets("AIF_LIQUIDITY").Range(Cells(i, 1), Cells(, 8)), 8, 0)
+
+        Wbk4.Sheets("AIF file 24(2)").Range("C259").NumberFormat = "@"
+        Wbk4.Sheets("AIF file 24(2)").Range("C259").Value = Application.VLookup(Wbk1.Sheets("AIF_LIQUIDITY").Cells(i, 1), Wbk1.Sheets("AIF_LIQUIDITY").Range(Cells(i, 1), Cells(, 16)), 16, 0)
+
+        Wbk4.Sheets("AIF file 24(2)").Range("C260").NumberFormat = "@"
+        Wbk4.Sheets("AIF file 24(2)").Range("C260").Value = Application.VLookup(Wbk1.Sheets("AIF_LIQUIDITY").Cells(i, 1), Wbk1.Sheets("AIF_LIQUIDITY").Range(Cells(i, 1), Cells(, 17)), 17, 0)
+
+        Wbk4.Sheets("AIF file 24(2)").Range("C261").NumberFormat = "@"
+        Wbk4.Sheets("AIF file 24(2)").Range("C261").Value = Application.VLookup(Wbk1.Sheets("AIF_LIQUIDITY").Cells(i, 1), Wbk1.Sheets("AIF_LIQUIDITY").Range(Cells(i, 1), Cells(, 18)), 18, 0)
+
+        Wbk4.Sheets("AIF file 24(2)").Range("C262").NumberFormat = "@"
+        Wbk4.Sheets("AIF file 24(2)").Range("C262").Value = Application.VLookup(Wbk1.Sheets("AIF_LIQUIDITY").Cells(i, 1), Wbk1.Sheets("AIF_LIQUIDITY").Range(Cells(i, 1), Cells(, 19)), 19, 0)
+
+        Wbk4.Sheets("AIF file 24(2)").Range("C263").NumberFormat = "@"
+        Wbk4.Sheets("AIF file 24(2)").Range("C263").Value = Application.VLookup(Wbk1.Sheets("AIF_LIQUIDITY").Cells(i, 1), Wbk1.Sheets("AIF_LIQUIDITY").Range(Cells(i, 1), Cells(, 20)), 20, 0)
+
+        Wbk4.Sheets("AIF file 24(2)").Range("C264").NumberFormat = "@"
+        Wbk4.Sheets("AIF file 24(2)").Range("C264").Value = Application.VLookup(Wbk1.Sheets("AIF_LIQUIDITY").Cells(i, 1), Wbk1.Sheets("AIF_LIQUIDITY").Range(Cells(i, 1), Cells(, 21)), 21, 0)
+
+        Wbk4.Sheets("AIF file 24(2)").Range("C265").NumberFormat = "@"
+        Wbk4.Sheets("AIF file 24(2)").Range("C265").Value = Application.VLookup(Wbk1.Sheets("AIF_LIQUIDITY").Cells(i, 1), Wbk1.Sheets("AIF_LIQUIDITY").Range(Cells(i, 1), Cells(, 22)), 22, 0)
+
+        Wbk4.Sheets("AIF file 24(2)").Range("C256").NumberFormat = "@"
+        Wbk4.Sheets("AIF file 24(2)").Range("C256").Value = Application.VLookup(Wbk1.Sheets("AIF_LIQUIDITY").Cells(i, 1), Wbk1.Sheets("AIF_LIQUIDITY").Range(Cells(i, 1), Cells(, 23)), 23, 0)
+
+        
+        a = "Stress Liquidity Profile Percentage of portfolio capable of being liquidated within: - 1 day or less: "
+        a = a & Wbk1.Sheets("AIF_LIQUIDITY").Cells(i, 9).Value & "  - 2-7 days: " & Wbk1.Sheets("AIF_LIQUIDITY").Cells(i, 10).Value & "  - 8-30 days: " & Wbk1.Sheets("AIF_LIQUIDITY").Cells(i, 11).Value & "  - 31-90 days: " & Wbk1.Sheets("AIF_LIQUIDITY").Cells(i, 12).Value & "  - 91-180 days: " & Wbk1.Sheets("AIF_LIQUIDITY").Cells(i, 13).Value & "  - 181-365 days: " & Wbk1.Sheets("AIF_LIQUIDITY").Cells(i, 14).Value & "  - more than 365 days: " & Wbk1.Sheets("AIF_LIQUIDITY").Cells(i, 15).Value
+        Wbk4.Sheets("AIF file 24(2)").Range("C382").Value = a
+        Wbk4.Sheets("AIF file 24(2)").Range("C382").Value = Replace(Wbk4.Sheets("AIF file 24(2)").Range("C382").Value, ",", ".") 'remplace les virgules par des points
+        
+    Wbk1.Close
+
+    Wbk3.Sheets("AIF_STRESS_RESULTS").Activate 'Utilisation du fichier AIF stress results pour remplir les plages de données
+    i = 1
+    While Wbk3.Sheets("AIF_STRESS_RESULTS").Cells(i, 1) <> Wbk4.Sheets("AIF file 24(1)").Range("C26")
+        i = i + 1
+    Wend
+    j = i
+    n = Application.WorksheetFunction.CountIf(Range("A" & j & ":A1000"), Wbk4.Sheets("AIF file 24(1)").Range("C26"))  'lorsqu'on trouve le code, il faut récupérer le nombre de lignes assimilées au même code
+
+    For j = i To n - 1 + j
+
+        B = B + Application.VLookup(Wbk3.Sheets("AIF_STRESS_RESULTS").Cells(i, 2), Wbk5.Sheets("Test").Range("A1:B2"), 2, 0) & ": " & Wbk3.Sheets("AIF_STRESS_RESULTS").Cells(i, 4).Value & " Result: " & Wbk3.Sheets("AIF_STRESS_RESULTS").Cells(i, 3).Value & " "
+
+        i = i + 1
+    Next j
+    Wbk3.Close
+    Wbk4.Sheets("AIF file 24(2)").Range("C381").Value = B
+    Wbk4.Sheets("AIF file 24(2)").Range("C381").Value = Replace(Wbk4.Sheets("AIF file 24(2)").Range("C381").Value, ",", ".")
+
+    Wbk4.Close Savechanges:=True
+    a = "" 'remettre à 0 les chaînes de caractères a et B
+    B = ""
+    MyFile = Dir
+
+Loop
+Application.ScreenUpdating = True
+MsgBox "Les reports ont bien été remplis."
+
+End Sub
